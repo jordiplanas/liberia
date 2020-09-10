@@ -9,7 +9,7 @@
 
 <body>
 
-    <a-scene gltf-model="dracoDecoderPath: draco/;">
+    <a-scene gltf-model="dracoDecoderPath: draco/">
         <a-entity id="camera" camera="fov: 80; zoom: 1;" position="0 2 5" orbit-controls="
             autoRotate: false;
             target: #target;
@@ -19,7 +19,7 @@
             minDistance:3;
             maxDistance:100;
             " mouse-cursor="">
-            <a-entity geometry="primitive:cone; radius-bottom:1; radius-top:0" scale=".33 1 .33" position="0 0 0" rotation="90 0 0" material="color: #0099ff; transparent: true; opacity:0.5"></a-entity>
+
         </a-entity>
         <a-entity id="target" gltf-model="comp.glb"></a-entity>
     </a-scene>
