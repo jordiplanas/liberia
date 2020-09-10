@@ -1,22 +1,125 @@
 <html>
 
 <head>
-    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/tizzle/aframe-orbit-controls-component/v0.1.14/dist/aframe-orbit-controls-component.min.js"></script>
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/d9f87fb1a2c5db1ea0e2feda9bd42b39b5bedc41/build/three.min.js"></script>
+    <!-- OrbitControls.js -->
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/d9f87fb1a2c5db1ea0e2feda9bd42b39b5bedc41/examples/js/controls/OrbitControls.js"></script>
+    <!-- DRACOLoader.js -->
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/d9f87fb1a2c5db1ea0e2feda9bd42b39b5bedc41/examples/js/loaders/DRACOLoader.js"></script>
+    <!-- GLTFLoader.js -->
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/d9f87fb1a2c5db1ea0e2feda9bd42b39b5bedc41/examples/js/loaders/GLTFLoader.js"></script>
+
+
 </head>
 
 <body>
-    <a-scene gltf-model="dracoDecoderPath: draco/;">
-        <a-entity id="camera" camera="fov: 80; zoom: 1;" position="0 5 5" orbit-controls="autoRotate: false; target: #glbtest; enableDamping: true; dampingFactor: 0.125; rotateSpeed:0.25; minDistance:3; maxDistance:100;" mouse-cursor=""></a-entity>
-        <a-assets>
-            <a-asset-item id="glbtestmodel" src="comp.glb"></a-asset-item>
-        </a-assets>
-        <a-entity light="color: #BBB; type: ambient" data-aframe-default-light="" aframe-injected=""></a-entity>
-        <a-entity light="intensity: 0.6; castShadow: true" position="-0.3418 1.158 1" data-aframe-default-light="" aframe-injected=""></a-entity>
-        <a-entity light="intensity: 0.2; castShadow: true" position="-0.5 1 1" data-aframe-default-light="" aframe-injected=""></a-entity>
-        <a-entity id="glbtest" gltf-model="comp.glb" shadow="receive: true" position="-5 0 0" scale="0.15 0.15 0.15"></a-entity>
-        <a-sky color="#222"></a-sky>
-    </a-scene>
+
+
+
+
+
+
+
+    <script>
+        let gltf = null;
+        let mixer = null;
+        let clock = new THREE.Clock();
+        let controls;
+        let camera;
+
+        init();
+        animate();
+
+        function init() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+
+            scene = new THREE.Scene();
+
+            //let ambient = new THREE.AmbientLight( 0x101030 );
+            let ambient = new THREE.AmbientLight(0xdddddd, .5);
+            scene.add(ambient);
+
+            const light = new THREE.SpotLight(0xFFFFFF, 1, 100, Math.PI / 4, 8);
+            light.position.set(10, 45, 25);
+            light.castShadow = true;
+            scene.add(light); // KHR_materials_unlit 拡張のテストの為、ライトをコメントアウト
+
+            camera = new THREE.PerspectiveCamera(60, width / height, 0.01, 10000);
+            camera.position.set(0, 3, 20);
+
+            let geometry = new THREE.BoxGeometry(100, 5, 100);
+            let material = new THREE.MeshLambertMaterial({
+                color: "#5bb35b"
+            });
+
+            //let ground = new THREE.Mesh(geometry, material);
+            //ground.position.y -= 15;
+            //ground.receiveShadow = true;
+            //scene.add(ground);
+
+            let manager = new THREE.LoadingManager();
+            manager.onProgress = function(item, loaded, total) {
+                console.log(item, loaded, total);
+            };
+
+            let loader = new THREE.GLTFLoader();
+            loader.setCrossOrigin('anonymous'); // r84 以降は明示的に setCrossOrigin() を指定する必要がある
+
+            //THREE.DRACOLoader.setDecoderPath( 'https://cdn.rawgit.com/cx20/gltf-test/a63d4941/libs/three.js/r95dev/draco/gltf/' );
+            loader.setDRACOLoader(new THREE.DRACOLoader());
+
+            let scale = .4;
+            let url = "comp.glb";
+
+            loader.load(url, function(data) {
+                gltf = data;
+                let object = gltf.scene;
+                object.scale.set(scale, scale, scale);
+                object.position.y = -5;
+                //object.position.x = 4;
+                object.castShadow = true;
+                object.receiveShadow = true;
+
+
+                scene.add(object);
+            });
+
+
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(0xbfe4ff);
+            // renderer.setClearColor(0x000000);
+            renderer.shadowMap.enabled = true;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.userPan = false;
+            controls.userPanSpeed = 0.0;
+            controls.maxDistance = 5000.0;
+            controls.maxPolarAngle = Math.PI * 0.495;
+            controls.autoRotate = true;
+            //controls.autoRotate = false;
+            //controls.autoRotate = false;
+            //controls.autoRotateSpeed = 2.0;
+            controls.autoRotateSpeed = -2.0;
+
+            renderer.setSize(width, height);
+            renderer.gammaOutput = true;
+            document.body.appendChild(renderer.domElement);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (mixer) mixer.update(clock.getDelta());
+            controls.update();
+            render();
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+    </script>
 </body>
 
 </html>
