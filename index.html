@@ -9,9 +9,12 @@
 
 <body>
 
-    <a-scene gltf-model="dracoDecoderPath: draco/">
+    <a-scene>
+        <a-assets>
+            <a-asset-item id="tree" src="out.glb"></a-asset-item>
+        </a-assets>
 
-        <a-entity gltf-model="comp.glb "></a-entity>
+        <a-entity gltf-model="#tree"></a-entity>
     </a-scene>
     <script>
     </script>
