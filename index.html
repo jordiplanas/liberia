@@ -1,0 +1,22 @@
+<html>
+
+<head>
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/tizzle/aframe-orbit-controls-component/v0.1.14/dist/aframe-orbit-controls-component.min.js"></script>
+</head>
+
+<body>
+    <a-scene gltf-model="dracoDecoderPath: draco/;">
+        <a-entity id="camera" camera="fov: 80; zoom: 1;" position="0 5 5" orbit-controls="autoRotate: false; target: #glbtest; enableDamping: true; dampingFactor: 0.125; rotateSpeed:0.25; minDistance:3; maxDistance:100;" mouse-cursor=""></a-entity>
+        <a-assets>
+            <a-asset-item id="glbtestmodel" src="comp.glb"></a-asset-item>
+        </a-assets>
+        <a-entity light="color: #BBB; type: ambient" data-aframe-default-light="" aframe-injected=""></a-entity>
+        <a-entity light="intensity: 0.6; castShadow: true" position="-0.3418 1.158 1" data-aframe-default-light="" aframe-injected=""></a-entity>
+        <a-entity light="intensity: 0.2; castShadow: true" position="-0.5 1 1" data-aframe-default-light="" aframe-injected=""></a-entity>
+        <a-entity id="glbtest" gltf-model="comp.glb" shadow="receive: true" position="-5 0 0" scale="0.15 0.15 0.15"></a-entity>
+        <a-sky color="#222"></a-sky>
+    </a-scene>
+</body>
+
+</html>
