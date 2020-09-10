@@ -5,22 +5,122 @@
 </head>
 
 <body>
+    <!-- three.min.js r102 -->
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/d9f87fb1a2c5db1ea0e2feda9bd42b39b5bedc41/build/three.min.js"></script>
+    <!-- OrbitControls.js -->
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/d9f87fb1a2c5db1ea0e2feda9bd42b39b5bedc41/examples/js/controls/OrbitControls.js"></script>
+    <!-- DRACOLoader.js -->
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/d9f87fb1a2c5db1ea0e2feda9bd42b39b5bedc41/examples/js/loaders/DRACOLoader.js"></script>
+    <!-- GLTFLoader.js -->
+    <script src="https://rawcdn.githack.com/mrdoob/three.js/d9f87fb1a2c5db1ea0e2feda9bd42b39b5bedc41/examples/js/loaders/GLTFLoader.js"></script>
 
-    <a-scene gltf-model="dracoDecoderPath: draco/;">
-        <a-entity id="camera" camera="fov: 80; zoom: 1;" position="0 2 5" orbit-controls="
-            autoRotate: false;
-            target: #target;
-            enableDamping: true;
-            dampingFactor: 0.125;
-            rotateSpeed:0.25;
-            minDistance:3;
-            maxDistance:100;
-            " mouse-cursor="">
-            <a-entity geometry="primitive:cone; radius-bottom:1; radius-top:0" scale=".33 1 .33" position="0 0 0" rotation="90 0 0" material="color: #0099ff; transparent: true; opacity:0.5"></a-entity>
-        </a-entity>
-        <a-entity id="target" gltf-model="l.glb" scale=".1 .1 .1" position="0 0 -5"></a-entity>
-    </a-scene>
+    <div id="container"></div>
+
+
 
 </body>
+<script>
+    let gltf = null;
+    let mixer = null;
+    let clock = new THREE.Clock();
+    let controls;
+    let camera;
+
+    init();
+    animate();
+
+    function init() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        scene = new THREE.Scene();
+
+        //let ambient = new THREE.AmbientLight( 0x101030 );
+        let ambient = new THREE.AmbientLight(0xdddddd);
+        //scene.add( ambient );
+
+        const light = new THREE.SpotLight(0xFFFFFF, 2, 100, Math.PI / 4, 8);
+        light.position.set(10, 25, 25);
+        light.castShadow = true;
+        scene.add(light); // KHR_materials_unlit 拡張のテストの為、ライトをコメントアウト
+
+        camera = new THREE.PerspectiveCamera(60, width / height, 0.01, 10000);
+        camera.position.set(0, 3, 10);
+
+
+
+        //let ground = new THREE.Mesh(geometry, material);
+        //ground.position.y -= 15;
+        //ground.receiveShadow = true;
+        //scene.add(ground);
+
+        let manager = new THREE.LoadingManager();
+        manager.onProgress = function(item, loaded, total) {
+            console.log(item, loaded, total);
+        };
+
+        let loader = new THREE.GLTFLoader();
+        loader.setCrossOrigin('anonymous'); // r84 以降は明示的に setCrossOrigin() を指定する必要がある
+
+        THREE.DRACOLoader.setDecoderPath('draco/');
+        loader.setDRACOLoader(new THREE.DRACOLoader());
+
+        let scale = .3;
+        let url = "l.glb";
+
+        loader.load(url, function(data) {
+            gltf = data;
+            let object = gltf.scene;
+            object.scale.set(scale, scale, scale);
+            //object.position.y = -5;
+            //object.position.x = 4;
+            object.castShadow = true;
+            object.receiveShadow = true;
+
+            let animations = gltf.animations;
+            if (animations && animations.length) {
+                mixer = new THREE.AnimationMixer(object);
+                for (let i = 0; i < animations.length; i++) {
+                    let animation = animations[i];
+                    mixer.clipAction(animation).play();
+                }
+            }
+            scene.add(object);
+        });
+
+
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(0xbfe4ff);
+        //renderer.setClearColor(0x000000);
+        renderer.shadowMap.enabled = true;
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.userPan = false;
+        controls.userPanSpeed = 0.0;
+        controls.maxDistance = 5000.0;
+        controls.maxPolarAngle = Math.PI * 0.495;
+        controls.autoRotate = true;
+        //controls.autoRotate = false;
+        //controls.autoRotate = false;
+        //controls.autoRotateSpeed = 2.0;
+        controls.autoRotateSpeed = -2.0;
+
+        renderer.setSize(width, height);
+        renderer.gammaOutput = true;
+        document.body.appendChild(renderer.domElement);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if (mixer) mixer.update(clock.getDelta());
+        controls.update();
+        render();
+    }
+
+    function render() {
+        renderer.render(scene, camera);
+    }
+</script>
 
 </html>
